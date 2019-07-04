@@ -1,0 +1,46 @@
+#!/bin/bash
+
+PROJECT_NAME=$1
+FRAME_NAME=$2
+PROJECT_ENPTY_GIT_REPO_URL=$3
+FRAME_GIT_REPO_URL=''
+
+if test -z $PROJECT_NAME || test -z $FRAME_NAME || test -z $PROJECT_ENPTY_GIT_REPO_URL
+then
+    echo Usage: sh $0 PROJECT_NAME FRAME_NAME PROJECT_ENPTY_GIT_REPO_URL
+    exit 1
+fi
+
+case $FRAME_NAME in
+    api)
+        FRAME_GIT_REPO_URL=git@github.com:smarty-kiki/api_frame.git
+        ;;
+    mvc)
+        FRAME_GIT_REPO_URL=git@github.com:smarty-kiki/mvc_frame.git
+        ;;
+    *)
+        exit 1
+        ;;
+esac
+
+git clone -b master $FRAME_GIT_REPO_URL $PROJECT_NAME
+test -d $PROJECT_NAME || exit 1
+
+cd $PROJECT_NAME
+git remote set-url origin $PROJECT_ENPTY_GIT_REPO_URL
+sh project/tool/naming_project.sh $PROJECT_NAME
+git add --all
+git commit -m "init empty frame"
+git push origin master
+
+DOCKER_APP_PATH=/Applications/Docker.app
+test -d $DOCKER_APP_PATH || exit
+
+echo 启动 docker-engine
+docker ps > /dev/null 2>&1 || open $DOCKER_APP_PATH
+while ! docker ps > /dev/null 2>&1
+do
+    sleep 1
+done
+
+sh project/tool/start_description_fast_demo.sh
