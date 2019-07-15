@@ -1,13 +1,17 @@
 #!/bin/bash
 
+#### Configuration
+CONFIG_FILE_PATH=~/.smarty_project_init
+
+#### Input
 PROJECT_NAME=$1
 FRAME_NAME=$2
-PROJECT_ENPTY_GIT_REPO_URL=$3
 FRAME_GIT_REPO_URL=''
 
-if test -z $PROJECT_NAME || test -z $FRAME_NAME || test -z $PROJECT_ENPTY_GIT_REPO_URL
+#### Input check
+if test -z $PROJECT_NAME || test -z $FRAME_NAME
 then
-    echo Usage: sh $0 PROJECT_NAME FRAME_NAME PROJECT_ENPTY_GIT_REPO_URL
+    echo Usage: sh $0 PROJECT_NAME FRAME_NAME
     exit 1
 fi
 
@@ -19,10 +23,59 @@ case $FRAME_NAME in
         FRAME_GIT_REPO_URL=git@github.com:smarty-kiki/mvc_frame.git
         ;;
     *)
+        echo FRAME_NAME should be api\|mvc
         exit 1
         ;;
 esac
 
+#### Dependence check
+if which jq > /dev/null
+then
+    echo Checking dependence...
+else
+    echo Require command line tool "'jq'"
+    exit 1
+fi
+
+#### Config check
+if test -f $CONFIG_FILE_PATH
+then
+    echo Checking config...
+    PERSONAL_ACCESS_TOKEN=`cat $CONFIG_FILE_PATH`
+else
+    read -p "Input your github personal access tokens:" PERSONAL_ACCESS_TOKEN
+    echo $PERSONAL_ACCESS_TOKEN > $CONFIG_FILE_PATH
+fi
+
+#### Repo creating
+echo Creating Github Repo...
+repo_info=`curl -X POST \
+    'https://api.github.com/user/repos?access_token='$PERSONAL_ACCESS_TOKEN \
+  -d '{
+    "name": "'$PROJECT_NAME'",
+    "private": false
+}' --connect-timeout 10 2> /dev/null`
+
+create_repo_res=$?
+
+if [ $create_repo_res -eq 0 ]
+then
+    html_url=`echo $repo_info | jq '.html_url'`
+    if [ "$html_url" = "null" ]
+    then
+        echo 'Cannot create github repo: '`echo $repo_info | jq '.message'`
+        exit 1
+    fi
+
+    echo Done! $html_url
+
+    PROJECT_ENPTY_GIT_REPO_URL=`echo $repo_info | jq '.clone_url' | sed -e 's/"//g'`
+else
+    echo 'Cannot create github repo: Connection timed out!'
+    exit
+fi
+
+#### Frame prepare
 git clone -b master $FRAME_GIT_REPO_URL $PROJECT_NAME
 test -d $PROJECT_NAME || exit 1
 
@@ -30,7 +83,7 @@ cd $PROJECT_NAME
 git remote set-url origin $PROJECT_ENPTY_GIT_REPO_URL
 sh project/tool/naming_project.sh $PROJECT_NAME
 git add --all
-git commit -m "init empty frame"
+git commit -m "Fork from $FRAME_GIT_REPO_URL and modify project name"
 git push origin master
 
 DOCKER_APP_PATH=/Applications/Docker.app
