@@ -89,11 +89,12 @@ git push origin master
 DOCKER_APP_PATH=/Applications/Docker.app
 test -d $DOCKER_APP_PATH || exit
 
-echo 启动 docker-engine
+echo Starting Docker-engine...
 docker ps > /dev/null 2>&1 || open $DOCKER_APP_PATH
 while ! docker ps > /dev/null 2>&1
 do
     sleep 1
 done
 
+echo Starting fast description demo...
 sh project/tool/start_description_fast_demo.sh
