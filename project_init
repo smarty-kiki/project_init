@@ -22,6 +22,9 @@ case $FRAME_NAME in
     mvc)
         FRAME_GIT_REPO_URL=git@github.com:smarty-kiki/mvc_frame.git
         ;;
+    layui_mvc)
+        FRAME_GIT_REPO_URL=git@github.com:smarty-kiki/layui_mvc_frame.git
+        ;;
     *)
         echo FRAME_NAME should be api\|mvc
         exit 1
@@ -97,4 +100,4 @@ do
 done
 
 echo Starting fast description demo...
-sh project/tool/start_description_fast_demo.sh
+sh project/tool/start_development_server.sh
