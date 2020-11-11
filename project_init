@@ -1,7 +1,13 @@
 #!/bin/bash
 
+ROOT_DIR="$(cd "$(dirname $0)" && pwd)"
+
 #### Configuration
-CONFIG_FILE_PATH=~/.smarty_project_init
+CONFIG_DIR=~/.smarty
+mkdir -p $CONFIG_DIR
+
+GIT_TOKEN_FILE_PATH=$CONFIG_DIR/git_token
+AFTER_INIT_HOOK=$CONFIG_DIR/after_init
 
 #### Input
 PROJECT_NAME=$1
@@ -41,13 +47,13 @@ else
 fi
 
 #### Config check
-if test -f $CONFIG_FILE_PATH
+if test -f $GIT_TOKEN_FILE_PATH
 then
     echo Checking config...
-    PERSONAL_ACCESS_TOKEN=`cat $CONFIG_FILE_PATH`
+    PERSONAL_ACCESS_TOKEN=`cat $GIT_TOKEN_FILE_PATH`
 else
     read -p "Input your github personal access tokens:" PERSONAL_ACCESS_TOKEN
-    echo $PERSONAL_ACCESS_TOKEN > $CONFIG_FILE_PATH
+    echo $PERSONAL_ACCESS_TOKEN > $GIT_TOKEN_FILE_PATH
 fi
 
 #### Repo creating
@@ -88,6 +94,11 @@ sh project/tool/naming_project.sh $PROJECT_NAME
 git add --all
 git commit -m "Fork from $FRAME_GIT_REPO_URL and modify project name"
 git push origin master
+
+if test -f $AFTER_INIT_HOOK
+then
+    project_name=$PROJECT_NAME frame_name=$FRAME_NAME root_dir=$ROOT_DIR $AFTER_INIT_HOOK
+fi
 
 DOCKER_APP_PATH=/Applications/Docker.app
 test -d $DOCKER_APP_PATH || exit
