@@ -95,9 +95,11 @@ git add --all
 git commit -m "Fork from $FRAME_GIT_REPO_URL and modify project name"
 git push origin master
 
-if test -f $AFTER_INIT_HOOK
+if test -x $AFTER_INIT_HOOK
 then
+    echo Starting after init hook...
     project_name=$PROJECT_NAME frame_name=$FRAME_NAME root_dir=$ROOT_DIR $AFTER_INIT_HOOK
+    echo Done after init hook...
 fi
 
 DOCKER_APP_PATH=/Applications/Docker.app
