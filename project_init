@@ -62,7 +62,8 @@ fi
 #### Repo creating
 echo Creating Github Repo...
 repo_info=`curl -X POST \
-    'https://api.github.com/user/repos?access_token='$PERSONAL_ACCESS_TOKEN \
+    -H 'Authorization: token '$PERSONAL_ACCESS_TOKEN \
+    'https://api.github.com/user/repos' \
   -d '{
     "name": "'$PROJECT_NAME'",
     "private": false
@@ -81,7 +82,7 @@ then
 
     echo Done! $html_url
 
-    PROJECT_ENPTY_GIT_REPO_URL=`echo $repo_info | jq '.clone_url' | sed -e 's/"//g'`
+    PROJECT_EMPTY_GIT_REPO_URL=`echo $repo_info | jq '.ssh_url' | sed -e 's/"//g'`
 else
     echo 'Cannot create github repo: Connection timed out!'
     exit
@@ -92,7 +93,7 @@ git clone -b master $FRAME_GIT_REPO_URL $PROJECT_NAME
 test -d $PROJECT_NAME || exit 1
 
 cd $PROJECT_NAME
-git remote set-url origin $PROJECT_ENPTY_GIT_REPO_URL
+git remote set-url origin $PROJECT_EMPTY_GIT_REPO_URL
 sh project/tool/naming_project.sh $PROJECT_NAME
 git add --all
 git commit -m "Fork from $FRAME_GIT_REPO_URL and modify project name"
