@@ -31,6 +31,9 @@ case $FRAME_NAME in
     mvc_admin)
         FRAME_GIT_REPO_URL=git@github.com:smarty-kiki/mvc_admin_frame.git
         ;;
+    mini_api)
+        FRAME_GIT_REPO_URL=git@github.com:smarty-kiki/mini_api_frame.git
+        ;;
     layui_mvc)
         FRAME_GIT_REPO_URL=git@github.com:smarty-kiki/layui_mvc_frame.git
         ;;
@@ -116,5 +119,5 @@ do
     sleep 1
 done
 
-echo Starting fast description demo...
+echo Starting development server...
 sh project/tool/start_development_server.sh
